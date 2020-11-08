@@ -130,7 +130,7 @@ roombaAccessory.prototype = {
 
     endRoombaIfNeeded(roomba) {
         if (!this.keepAliveEnabled) {
-            roomba.end();
+           // roomba.end();
         }
     },
 
