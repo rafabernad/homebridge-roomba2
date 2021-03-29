@@ -29,7 +29,7 @@ const roombaAccessory = function (log, config) {
     this.switchService = new Service.Switch(this.name);
     this.batteryService = new Service.BatteryService(this.name);
     if (this.showDockAsContactSensor) {
-        this.dockService = new Service.ContactSensor(this.name + " Docked", "docked");
+        this.dockingService = new Service.ContactSensor(this.name + " Docking", "docking");
     }
     if (this.showRunningAsContactSensor) {
         this.runningService = new Service.ContactSensor(this.name + " Running", "running");
@@ -192,14 +192,14 @@ roombaAccessory.prototype = {
         });
     },
 
-    getDockedState(callback) {
-        this.log("Docked status requested");
+    getDockingStatus(callback) {
+        this.log("Docking status requested");
 
         this.getStatus((error, status) => {
             if (error) {
                 callback(error);
             } else {
-                callback(null, !status.charging);
+                callback(null, !status.running && !status.charging);
             }
         });
     },
@@ -387,10 +387,10 @@ roombaAccessory.prototype = {
              .on("get", this.getFilterStatus.bind(this));
 
         if (this.showDockAsContactSensor) {
-            this.dockService
+            this.dockingService
                 .getCharacteristic(Characteristic.ContactSensorState)
-                .on("get", this.getDockedState.bind(this));
-            services.push(this.dockService);
+                .on("get", this.getDockingStatus.bind(this));
+            services.push(this.dockingService);
         }
         if (this.showRunningAsContactSensor) {
             this.runningService
@@ -441,9 +441,9 @@ roombaAccessory.prototype = {
              .getCharacteristic(Characteristic.FilterChangeIndication)
              .updateValue(status.binStatus);
         if (this.showDockAsContactSensor) {
-            this.dockService
+            this.dockingService
                 .getCharacteristic(Characteristic.ContactSensorState)
-                .updateValue(!status.charging);
+                .updateValue(!status.running && !status.charging);
         }
         if (this.showRunningAsContactSensor) {
             this.runningService
